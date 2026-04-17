@@ -2,14 +2,15 @@
 // db.php
 session_start();
 
-$db_file = __DIR__ . '/data/database.sqlite';
+$mysql_host = 'localhost';
+$mysql_user = 'root';
+$mysql_pass = '';
+$mysql_dbname = 'waggy_db';
 
 try {
-    $pdo = new PDO("sqlite:" . $db_file);
+    $pdo = new PDO("mysql:host=$mysql_host;dbname=$mysql_dbname;charset=utf8mb4", $mysql_user, $mysql_pass);
     // Set error mode to exception
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // Enable foreign keys
-    $pdo->exec('PRAGMA foreign_keys = ON;');
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
