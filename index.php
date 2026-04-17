@@ -55,6 +55,24 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
     </div>
 
 </section>
+
+<!-- FEATURES MARQUEE SECTION -->
+<div class="features-marquee">
+    <div class="marquee-content">
+        <div class="marquee-item">🚚 Free Delivery Over ₹500</div>
+        <div class="marquee-item">🛡️ Secure Payments</div>
+        <div class="marquee-item">↩️ 30-Day Returns</div>
+        <div class="marquee-item">🐾 Premium Pet Care</div>
+        <div class="marquee-item">⭐ 5-Star Rated Service</div>
+        <!-- Duplicated for seamless loop -->
+        <div class="marquee-item">🚚 Free Delivery Over ₹500</div>
+        <div class="marquee-item">🛡️ Secure Payments</div>
+        <div class="marquee-item">↩️ 30-Day Returns</div>
+        <div class="marquee-item">🐾 Premium Pet Care</div>
+        <div class="marquee-item">⭐ 5-Star Rated Service</div>
+    </div>
+</div>
+
 <!-- PRODUCT SECTION -->
 
 <section class="product-section">
@@ -117,6 +135,28 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
 
     <div class="promo-image-box">
         <img src="assets/images/16.jpeg" alt="Dog Kennel">
+    </div>
+</section>
+
+<!-- WAGGY IMPACT / STATS SECTION -->
+<section class="stats-section fade-in">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">15,000+</div>
+            <div class="stat-text">Happy Pets Served</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">99%</div>
+            <div class="stat-text">Delivery Success Rate</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">50+</div>
+            <div class="stat-text">Premium Global Brands</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">24/7</div>
+            <div class="stat-text">Expert Pet Care Support</div>
+        </div>
     </div>
 </section>
 

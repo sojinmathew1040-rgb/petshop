@@ -14,7 +14,7 @@ $wishlist_count = isset($_SESSION['wishlist']) ? count($_SESSION['wishlist']) : 
 
     <title>Waggy Pet Shop</title>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= time() ?>">
     <link rel="stylesheet" href="assets/css/addons.css">
 
     <!-- FONT -->
