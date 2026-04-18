@@ -55,7 +55,31 @@ try {
         rating INT DEFAULT 5,
         stock_status VARCHAR(50) DEFAULT 'In Stock',
         stock_quantity INT DEFAULT 10,
+        is_trending TINYINT(1) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        image_path VARCHAR(255) DEFAULT 'assets/images/placeholder.jpg',
+        sort_order INT DEFAULT 0
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS testimonials (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        customer_name VARCHAR(255) NOT NULL,
+        quote TEXT NOT NULL,
+        rating INT DEFAULT 5,
+        image_path VARCHAR(255) DEFAULT 'assets/images/user-placeholder.jpg',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS deal_of_the_day (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        end_time DATETIME NOT NULL,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     )");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS product_images (

@@ -40,7 +40,6 @@ if ($product['stock_quantity'] <= 0) {
     /* Apple-Level Pro style overrides for product.php */
     body {
         background: #fbfbfd;
-        padding-top: 64px;
     }
 
     .pro-product-wrapper {
@@ -267,10 +266,16 @@ if ($product['stock_quantity'] <= 0) {
         .pro-action-area {
             flex-direction: column;
             align-items: stretch;
+            gap: 15px;
         }
 
         .pro-qty {
             justify-content: space-between;
+        }
+
+        .pro-add-btn {
+            flex: none;
+            width: 100%;
         }
     }
 

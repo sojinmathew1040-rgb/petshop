@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old_price = $_POST['old_price'] ?: null;
         $category = $_POST['category'];
         $stock = (int) $_POST['stock_quantity'];
+        $is_trending = isset($_POST['is_trending']) ? 1 : 0;
 
         $badge = '';
         $stock_status = 'In Stock';
@@ -34,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $badge = $_POST['badge'];
         }
 
-        $stmt = $pdo->prepare("UPDATE products SET title=?, description=?, price=?, old_price=?, category=?, badge=?, stock_status=?, stock_quantity=? WHERE id=?");
-        $stmt->execute([$title, $desc, $price, $old_price, $category, $badge, $stock_status, $stock, $product_id]);
+        $stmt = $pdo->prepare("UPDATE products SET title=?, description=?, price=?, old_price=?, category=?, badge=?, stock_status=?, stock_quantity=?, is_trending=? WHERE id=?");
+        $stmt->execute([$title, $desc, $price, $old_price, $category, $badge, $stock_status, $stock, $is_trending, $product_id]);
 
         // Note: Full image edit logic is complex; for MVP we'll just allow data updates.
         // A robust image manager could be an additional feature later.
@@ -48,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
 $stmt->execute([$product_id]);
 $product = $stmt->fetch();
+$categories = $pdo->query("SELECT * FROM categories ORDER BY sort_order ASC")->fetchAll();
 
 if (!$product) {
     header('Location: product_manager.php');
@@ -72,7 +74,10 @@ if (!$product) {
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="hero_manager.php">Hero Slider</a></li>
+                <li><a href="category_manager.php">Categories</a></li>
                 <li><a href="product_manager.php" class="active">Products</a></li>
+                <li><a href="deal_manager.php">Deal Of The Day</a></li>
+                <li><a href="testimonial_manager.php">Testimonials</a></li>
                 <li><a href="orders.php">Orders</a></li>
                 <li><a href="logout.php">Logout</a></li>
             </ul>
@@ -111,11 +116,12 @@ if (!$product) {
                         <div class="form-group" style="flex:1;">
                             <label>Category</label>
                             <select name="category" required>
-                                <option value="dog" <?= $product['category'] == 'dog' ? 'selected' : '' ?>>Dog</option>
-                                <option value="cat" <?= $product['category'] == 'cat' ? 'selected' : '' ?>>Cat</option>
-                                <option value="bird" <?= $product['category'] == 'bird' ? 'selected' : '' ?>>Bird</option>
-                                <option value="accessories" <?= $product['category'] == 'accessories' ? 'selected' : '' ?>>
-                                    Accessories</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat['name']) ?>"
+                                        <?= $product['category'] === $cat['name'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($cat['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group" style="flex:1;">
@@ -130,6 +136,12 @@ if (!$product) {
                                 </option>
                                 <option value="new" <?= $product['badge'] == 'new' ? 'selected' : '' ?>>New</option>
                             </select>
+                        </div>
+                        <div class="form-group" style="flex:1; display:flex; align-items:center; gap:10px;">
+                            <input type="checkbox" name="is_trending" id="is_trending" value="1"
+                                <?= isset($product['is_trending']) && $product['is_trending'] ? 'checked' : '' ?>
+                                style="width:20px;height:20px;cursor:pointer;">
+                            <label for="is_trending" style="margin-bottom:0; cursor:pointer;">Trending</label>
                         </div>
                     </div>
                     <button type="submit" name="update_product" class="btn-primary">Save Changes</button>

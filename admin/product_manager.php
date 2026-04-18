@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old_price = $_POST['old_price'] ?: null;
         $category = $_POST['category'];
         $stock = (int) $_POST['stock_quantity'];
+        $is_trending = isset($_POST['is_trending']) ? 1 : 0;
 
         $badge = '';
         $stock_status = 'In Stock';
@@ -26,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $badge = $_POST['badge'];
         }
 
-        $stmt = $pdo->prepare("INSERT INTO products (title, description, price, old_price, category, badge, stock_status, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $desc, $price, $old_price, $category, $badge, $stock_status, $stock]);
+        $stmt = $pdo->prepare("INSERT INTO products (title, description, price, old_price, category, badge, stock_status, stock_quantity, is_trending) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $desc, $price, $old_price, $category, $badge, $stock_status, $stock, $is_trending]);
         $product_id = $pdo->lastInsertId();
 
         // Image uploads
@@ -68,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
+$categories = $pdo->query("SELECT * FROM categories ORDER BY sort_order ASC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html>
@@ -87,7 +89,10 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="hero_manager.php">Hero Slider</a></li>
+                <li><a href="category_manager.php">Categories</a></li>
                 <li><a href="product_manager.php" class="active">Products</a></li>
+                <li><a href="deal_manager.php">Deal Of The Day</a></li>
+                <li><a href="testimonial_manager.php">Testimonials</a></li>
                 <li><a href="orders.php">Orders</a></li>
                 <li><a href="logout.php">Logout</a></li>
             </ul>
@@ -122,10 +127,13 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                         <div class="form-group" style="flex:1;">
                             <label>Category</label>
                             <select name="category" required>
-                                <option value="dog">Dog</option>
-                                <option value="cat">Cat</option>
-                                <option value="bird">Bird</option>
-                                <option value="accessories">Accessories</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat['name']) ?>">
+
+
+                                        <?= htmlspecialchars($cat['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group" style="flex:1;">
@@ -139,8 +147,13 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                                 <option value="new">New</option>
                             </select>
                         </div>
+                        <div class="form-group" style="flex:1; display:flex; align-items:center; gap:10px;">
+                            <input type="checkbox" name="is_trending" id="is_trending" value="1"
+                                style="width:20px;height:20px;cursor:pointer;">
+                            <label for="is_trending" style="margin-bottom:0; cursor:pointer;">Trending</label>
+                        </div>
                         <div class="form-group" style="flex:2;">
-                            <label>3D Images (Select multiple for Apple-level rotation)</label>
+                            <label>3D Images</label>
                             <input type="file" name="images[]" multiple accept="image/*" required>
                         </div>
                     </div>
@@ -161,7 +174,7 @@ $products = $pdo->query("SELECT * FROM products ORDER BY id DESC")->fetchAll();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($products as $p): ?>
+                            <?php foreach ($products as $p): ?>
                             <tr>
                                 <td><?= $p['id'] ?></td>
                                 <td><?= htmlspecialchars($p['title']) ?></td>

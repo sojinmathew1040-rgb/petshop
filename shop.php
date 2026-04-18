@@ -9,7 +9,9 @@ $shop_products = $pdo->query("
     ORDER BY id DESC
 ")->fetchAll();
 
+$categories = $pdo->query("SELECT * FROM categories ORDER BY sort_order ASC")->fetchAll();
 $wishlist_items = $_SESSION['wishlist'] ?? [];
+$requested_cat = $_GET['category'] ?? 'all';
 ?>
 
 <style>
@@ -309,16 +311,17 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
     <aside class="sidebar">
         <h3>Categories</h3>
         <div class="filter-group">
-            <label class="custom-checkbox"><input type="checkbox" class="cat-filter" value="all" checked><span
-                    class="checkmark"></span>All Products</label>
-            <label class="custom-checkbox"><input type="checkbox" class="cat-filter" value="dog"><span
-                    class="checkmark"></span>Dog Kennels</label>
-            <label class="custom-checkbox"><input type="checkbox" class="cat-filter" value="cat"><span
-                    class="checkmark"></span>Cat Houses</label>
-            <label class="custom-checkbox"><input type="checkbox" class="cat-filter" value="bird"><span
-                    class="checkmark"></span>Bird Cages</label>
-            <label class="custom-checkbox"><input type="checkbox" class="cat-filter" value="accessories"><span
-                    class="checkmark"></span>Accessories</label>
+            <label class="custom-checkbox">
+                <input type="checkbox" class="cat-filter" value="all" <?= strtolower($requested_cat) === 'all' ? 'checked' : '' ?>>
+                <span class="checkmark"></span>All Products
+            </label>
+            <?php foreach ($categories as $c): ?>
+                <label class="custom-checkbox">
+                    <input type="checkbox" class="cat-filter" value="<?= htmlspecialchars($c['name']) ?>"
+                        <?= strtolower($requested_cat) === strtolower($c['name']) ? 'checked' : '' ?>>
+                    <span class="checkmark"></span><?= htmlspecialchars($c['name']) ?>
+                </label>
+            <?php endforeach; ?>
         </div>
 
         <h3>Price Range</h3>
@@ -397,15 +400,18 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
             const ignorePrice = activePrices.length === 0;
 
             products.forEach(p => {
-                const productCat = p.getAttribute("data-cat") || "";
+                const productCat = (p.getAttribute("data-cat") || "").toLowerCase();
                 const productPrice = p.getAttribute("data-price") || "";
 
-                let catMatch = showAllCats ? true : activeCats.some(cat => productCat.includes(cat));
+                let catMatch = showAllCats ? true : activeCats.some(cat => productCat === cat.toLowerCase());
                 let priceMatch = ignorePrice ? true : activePrices.includes(productPrice);
 
                 p.style.display = (catMatch && priceMatch) ? "flex" : "none";
             });
         }
+
+        // Initial filtering on page load to apply URL queries
+        filterProducts();
 
         catFilters.forEach(cb => cb.addEventListener("change", function () {
             if (this.value === "all" && this.checked) {

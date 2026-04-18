@@ -48,7 +48,10 @@ $slides = $pdo->query("SELECT * FROM hero_slides ORDER BY sort_order ASC, id ASC
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="hero_manager.php" class="active">Hero Slider</a></li>
+                <li><a href="category_manager.php">Categories</a></li>
                 <li><a href="product_manager.php">Products</a></li>
+                <li><a href="deal_manager.php">Deal Of The Day</a></li>
+                <li><a href="testimonial_manager.php">Testimonials</a></li>
                 <li><a href="orders.php">Orders</a></li>
                 <li><a href="logout.php">Logout</a></li>
             </ul>
