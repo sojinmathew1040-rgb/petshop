@@ -34,6 +34,13 @@ if ($product['stock_quantity'] <= 0) {
     $stock_status_color = '#ff9500';
     $stock_bg = '#fff8e5';
 }
+
+$sort = $_GET['sort'] ?? 'newest';
+$order_by = $sort === 'oldest' ? 'ASC' : 'DESC';
+$rev_stmt = $pdo->prepare("SELECT r.*, u.name FROM product_reviews r JOIN users u ON r.user_id = u.id WHERE r.product_id = ? ORDER BY r.created_at $order_by");
+$rev_stmt->execute([$id]);
+$reviews = $rev_stmt->fetchAll();
+$current_user_id = $_SESSION['user_id'] ?? 0;
 ?>
 
 <style>
@@ -354,6 +361,181 @@ if ($product['stock_quantity'] <= 0) {
     .lbx-next {
         right: 40px;
     }
+
+    /* Reviews Pro */
+    .pro-reviews-wrapper {
+        max-width: 1400px;
+        margin: 0 auto 80px auto;
+        padding: 0 40px;
+    }
+
+    .pro-reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 20px;
+    }
+
+    .pro-reviews-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1d1d1f;
+    }
+
+    .pro-reviews-filter select {
+        padding: 10px 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 15px;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .pro-review-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .pro-review-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .pro-review-user {
+        font-weight: 600;
+        font-size: 17px;
+        color: #1d1d1f;
+    }
+
+    .pro-review-date {
+        font-size: 14px;
+        color: #86868b;
+    }
+
+    .pro-review-rating {
+        color: #d6a86c;
+        margin-bottom: 15px;
+    }
+
+    .pro-review-text {
+        font-size: 15px;
+        color: #333;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .pro-review-photo {
+        max-width: 200px;
+        border-radius: 12px;
+        cursor: pointer;
+    }
+
+    .pro-admin-reply {
+        background: #f5f5f7;
+        padding: 20px;
+        border-radius: 16px;
+        margin-top: 20px;
+        border-left: 4px solid #1d1d1f;
+    }
+
+    .pro-admin-reply-label {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 5px;
+        color: #1d1d1f;
+    }
+
+    .pro-review-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .pro-btn-outline {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #1d1d1f;
+        background: transparent;
+        color: #1d1d1f;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .pro-btn-outline:hover {
+        background: #1d1d1f;
+        color: #fff;
+    }
+
+    .pro-btn-danger {
+        border-color: #ff3b30;
+        color: #ff3b30;
+    }
+
+    .pro-btn-danger:hover {
+        background: #ff3b30;
+        color: #fff;
+    }
+
+    .pro-review-form {
+        background: #fff;
+        border-radius: 24px;
+        padding: 30px;
+        margin-bottom: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .pro-review-form textarea {
+        width: 100%;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .pro-review-form select,
+    .pro-review-form input[type="file"] {
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+
+    .pro-btn-solid {
+        padding: 12px 24px;
+        border-radius: 980px;
+        background: #1d1d1f;
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .pro-btn-solid:hover {
+        background: #333;
+    }
+
+    @media(max-width: 992px) {
+        .pro-reviews-wrapper {
+            padding: 0 20px;
+        }
+
+        .pro-reviews-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+    }
 </style>
 
 <div class="pro-product-wrapper">
@@ -407,6 +589,88 @@ if ($product['stock_quantity'] <= 0) {
     </div>
 </div>
 
+<div class="pro-reviews-wrapper">
+    <div class="pro-reviews-header">
+        <h2 class="pro-reviews-title">Customer Reviews (<?= count($reviews) ?>)</h2>
+        <div class="pro-reviews-filter">
+            <select onchange="window.location.href='?id=<?= $id ?>&sort='+this.value">
+                <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Newest First</option>
+                <option value="oldest" <?= $sort === 'oldest' ? 'selected' : '' ?>>Oldest First</option>
+            </select>
+        </div>
+    </div>
+
+    <?php if ($current_user_id): ?>
+        <div class="pro-review-form">
+            <h3>Write a Review</h3>
+            <form id="addReviewForm" onsubmit="submitReview(event)">
+                <input type="hidden" name="action" value="add_review">
+                <input type="hidden" name="product_id" value="<?= $id ?>">
+                <div style="margin: 15px 0;">
+                    <label style="margin-right: 15px; font-weight: 600;">Rating:</label>
+                    <select name="rating" style="padding: 5px; border-radius: 8px;">
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                    </select>
+                </div>
+                <textarea name="review_text" placeholder="Share your thoughts about this product..." required></textarea>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Attach a Photo (Optional):</label>
+                    <input type="file" name="photo" accept="image/*">
+                </div>
+                <button type="submit" class="pro-btn-solid">Submit Review</button>
+            </form>
+        </div>
+    <?php else: ?>
+        <div style="margin-bottom: 40px; padding: 20px; background: #fff; border-radius: 16px; text-align: center;">
+            <p>Please <a href="login.php" style="color: #1d1d1f; font-weight: 600;">log in</a> to write a review.</p>
+        </div>
+    <?php endif; ?>
+
+    <div class="pro-reviews-list">
+        <?php if (count($reviews) > 0): ?>
+            <?php foreach ($reviews as $rev): ?>
+                <div class="pro-review-card" id="review-<?= $rev['id'] ?>">
+                    <div class="pro-review-head">
+                        <div class="pro-review-user"><?= htmlspecialchars($rev['name']) ?></div>
+                        <div class="pro-review-date"><?= date('F j, Y', strtotime($rev['created_at'])) ?></div>
+                    </div>
+                    <div class="pro-review-rating">
+                        <?= str_repeat('★', $rev['rating']) . str_repeat('☆', 5 - $rev['rating']) ?>
+                    </div>
+                    <div class="pro-review-text" id="review-text-<?= $rev['id'] ?>">
+                        <?= nl2br(htmlspecialchars($rev['review_text'])) ?>
+                    </div>
+                    <?php if ($rev['photo_path']): ?>
+                        <img src="<?= htmlspecialchars($rev['photo_path']) ?>" class="pro-review-photo"
+                            onclick="openReviewPhoto(this.src)">
+                    <?php endif; ?>
+
+                    <?php if ($rev['admin_reply']): ?>
+                        <div class="pro-admin-reply">
+                            <div class="pro-admin-reply-label">Waggy Admin Response:</div>
+                            <div><?= nl2br(htmlspecialchars($rev['admin_reply'])) ?></div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($current_user_id == $rev['user_id']): ?>
+                        <div class="pro-review-actions">
+                            <button class="pro-btn-outline"
+                                onclick="editReview(<?= $rev['id'] ?>, <?= $rev['rating'] ?>)">Edit</button>
+                            <button class="pro-btn-outline pro-btn-danger" onclick="deleteReview(<?= $rev['id'] ?>)">Delete</button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p style="color: #86868b;">No reviews yet. Be the first to review this product!</p>
+        <?php endif; ?>
+    </div>
+</div>
+
 <!-- Lbx HTML -->
 <div id="lbx" class="lbx-overlay">
     <div class="lbx-close" onclick="closeLbx()">&times;</div>
@@ -447,8 +711,12 @@ if ($product['stock_quantity'] <= 0) {
         setMainImg(idx);
         document.getElementById('lbx').style.display = 'block';
         document.getElementById('lbx-img').src = images[currIdx];
+        document.querySelectorAll('.lbx-nav').forEach(n => n.style.display = 'flex');
     }
-    function closeLbx() { document.getElementById('lbx').style.display = 'none'; }
+    function closeLbx() {
+        document.getElementById('lbx').style.display = 'none';
+        document.querySelectorAll('.lbx-nav').forEach(n => n.style.display = 'flex');
+    }
     function navLbx(dir) {
         currIdx += dir;
         if (currIdx < 0) currIdx = images.length - 1;
@@ -464,6 +732,79 @@ if ($product['stock_quantity'] <= 0) {
             if (e.key === 'ArrowRight') navLbx(1);
         }
     });
+
+    function openReviewPhoto(src) {
+        document.getElementById('lbx').style.display = 'block';
+        document.getElementById('lbx-img').src = src;
+        // Disable nav arrows for single photo
+        document.querySelectorAll('.lbx-nav').forEach(n => n.style.display = 'none');
+    }
+
+    async function submitReview(e) {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        try {
+            const res = await fetch('ajax/review_action.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error submitting review');
+            }
+        } catch (err) {
+            alert('Network error');
+        }
+    }
+
+    async function deleteReview(id) {
+        if (!confirm('Are you sure you want to delete your review?')) return;
+        const fd = new FormData();
+        fd.append('action', 'delete_review');
+        fd.append('review_id', id);
+        try {
+            const res = await fetch('ajax/review_action.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('review-' + id).remove();
+            } else {
+                alert(data.message || 'Error deleting review');
+            }
+        } catch (err) {
+            alert('Network error');
+        }
+    }
+
+    async function editReview(id, currentRating) {
+        const textEl = document.getElementById('review-text-' + id);
+        const currentText = textEl.innerText;
+        const newText = prompt("Edit your review:", currentText);
+        if (newText === null || newText.trim() === '') return;
+
+        const newRatingStr = prompt("Edit rating (1-5):", currentRating);
+        const newRating = parseInt(newRatingStr);
+        if (isNaN(newRating) || newRating < 1 || newRating > 5) {
+            alert("Invalid rating");
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('action', 'edit_review');
+        fd.append('review_id', id);
+        fd.append('rating', newRating);
+        fd.append('review_text', newText);
+
+        try {
+            const res = await fetch('ajax/review_action.php', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error editing review');
+            }
+        } catch (err) {
+            alert('Network error');
+        }
+    }
 </script>
 
 <?php include 'footer.php'; ?>
