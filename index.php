@@ -151,10 +151,12 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
     <div class="product-header">
         <h2>Premium Pet Kennels</h2>
         <div class="product-filter">
-            <button class="active">All</button>
-            <button>Dog</button>
-            <button>Cat</button>
-            <button>Bird</button>
+            <button class="active" onclick="filterHomeProducts('all', this)">All</button>
+            <?php foreach ($home_categories as $cat): ?>
+                <button onclick="filterHomeProducts('<?= addslashes(strtolower($cat['name'])) ?>', this)">
+                    <?= htmlspecialchars($cat['name']) ?>
+                </button>
+            <?php endforeach; ?>
         </div>
         <a href="shop.php" class="shop-now-btn">Shop Now →</a> <!-- Link to main shop page -->
     </div>
@@ -163,7 +165,8 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
         <?php foreach ($home_products as $p):
             $in_wishlist = in_array($p['id'], $wishlist_items);
             ?>
-            <div class="product-card" onclick="window.location='product.php?id=<?= $p['id'] ?>'">
+            <div class="product-card" data-category="<?= htmlspecialchars($p['category']) ?>"
+                onclick="window.location='product.php?id=<?= $p['id'] ?>'">
                 <!-- WISHLIST HEART -->
                 <div class="wishlist-btn <?= $in_wishlist ? 'active' : '' ?>"
                     onclick="toggleWishlist(event, <?= $p['id'] ?>, this)">
@@ -209,7 +212,8 @@ $wishlist_items = $_SESSION['wishlist'] ?? [];
             <?php foreach ($trending_products as $p):
                 $in_wishlist = in_array($p['id'], $wishlist_items);
                 ?>
-                <div class="product-card" onclick="window.location='product.php?id=<?= $p['id'] ?>'">
+                <div class="product-card" data-category="<?= htmlspecialchars($p['category']) ?>"
+                    onclick="window.location='product.php?id=<?= $p['id'] ?>'">
                     <div class="wishlist-btn <?= $in_wishlist ? 'active' : '' ?>"
                         onclick="toggleWishlist(event, <?= $p['id'] ?>, this)">
                         <?= $in_wishlist ? '❤️' : '🤍' ?>
@@ -430,6 +434,29 @@ include 'footer.php';
             dealTimer.querySelector('.seconds').innerText = String(seconds).padStart(2, '0');
         }, 1000);
     }
+
+    function filterHomeProducts(category, btn) {
+        // Toggle active button class
+        const filterBtns = document.querySelectorAll('.product-filter button');
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Filter cards
+        const cards = document.querySelectorAll('.product-grid .product-card');
+        cards.forEach(card => {
+            const cardCat = (card.dataset.category || '').toLowerCase();
+            if (category === 'all' || cardCat.includes(category)) {
+                card.style.display = 'flex';
+                // Add fade-in transition
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, 50);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
 </script>
 <script>
     const form = document.getElementById("offerForm");
@@ -456,6 +483,16 @@ include 'footer.php';
             if (result.success) {
                 form.style.display = "none";
                 successMsg.style.display = "block";
+
+                // CELEBRATION CONFETTI DROP
+                for (let i = 0; i < 50; i++) {
+                    let confetti = document.createElement("div");
+                    confetti.classList.add("confetti");
+                    confetti.style.left = Math.random() * 100 + "vw";
+                    confetti.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }
             } else {
                 alert(result.message);
                 btn.querySelector(".btn-text").textContent = "REGISTER NOW";

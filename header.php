@@ -39,10 +39,11 @@ $wishlist_count = isset($_SESSION['wishlist']) ? count($_SESSION['wishlist']) : 
                 </div>
             </a>
 
-            <div class="search-box">
-                <input type="text" placeholder="Search For More Than 10,000 Products">
-                <button>🔍</button>
-            </div>
+            <form action="shop.php" method="GET" class="search-box">
+                <input type="text" name="search" placeholder="Search For More Than 10,000 Products..."
+                    value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                <button type="submit">🔍</button>
+            </form>
 
             <div class="contact">
                 <div>

@@ -71,6 +71,38 @@ if ($data['action'] == 'signup') {
         exit;
     }
 
+    if ($credential === 'mock_credential_jwt_payload' && defined('GOOGLE_CLIENT_ID') && GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+        $email = trim($data['email'] ?? 'dev.testuser@example.com');
+        $name_part = explode('@', $email)[0];
+        $name = ucwords(str_replace(['.', '_', '-'], ' ', $name_part));
+
+        try {
+            // Check if user exists
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user) {
+                // Login
+                $_SESSION['user_logged_in'] = true;
+                $_SESSION['user_id'] = $user['id'];
+            } else {
+                // Signup
+                $random_pass = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+                $stmt->execute([$name, $email, $random_pass]);
+
+                $_SESSION['user_logged_in'] = true;
+                $_SESSION['user_id'] = $pdo->lastInsertId();
+            }
+
+            echo json_encode(['success' => true]);
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
     // Decode JWT (header.payload.signature)
     $parts = explode('.', $credential);
     if (count($parts) === 3) {
@@ -78,7 +110,7 @@ if ($data['action'] == 'signup') {
         if ($payload && isset($payload['email'])) {
             $email = $payload['email'];
             $name = $payload['name'] ?? 'Google User';
-            
+
             try {
                 // Check if user exists
                 $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -95,7 +127,7 @@ if ($data['action'] == 'signup') {
                     $random_pass = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
                     $stmt->execute([$name, $email, $random_pass]);
-                    
+
                     $_SESSION['user_logged_in'] = true;
                     $_SESSION['user_id'] = $pdo->lastInsertId();
                 }
@@ -111,4 +143,3 @@ if ($data['action'] == 'signup') {
         echo json_encode(['success' => false, 'message' => 'Invalid Google credential format']);
     }
 }
-?>

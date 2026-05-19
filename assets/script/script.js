@@ -90,44 +90,19 @@ function goToSlide(index) {
 }
 
 /* ARROW CLICK */
-document.querySelector(".arrow-left").addEventListener("click", () => {
-    moveSlide(currentSlide - 1);
-});
+const arrowLeft = document.querySelector(".arrow-left");
+const arrowRight = document.querySelector(".arrow-right");
+if (arrowLeft) {
+    arrowLeft.addEventListener("click", () => {
+        moveSlide(currentSlide - 1);
+    });
+}
+if (arrowRight) {
+    arrowRight.addEventListener("click", () => {
+        moveSlide(currentSlide + 1);
+    });
+}
 
-document.querySelector(".arrow-right").addEventListener("click", () => {
-    moveSlide(currentSlide + 1);
-});
-const form = document.getElementById("offerForm");
-const btn = document.getElementById("submitBtn");
-
-form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    // LOADING
-    btn.classList.add("loading");
-
-    setTimeout(() => {
-        btn.classList.remove("loading");
-
-        // SUCCESS EFFECT
-        btn.classList.add("success");
-        btn.innerHTML = "✓ Registered";
-
-        // CONFETTI
-        for (let i = 0; i < 40; i++) {
-            let confetti = document.createElement("div");
-            confetti.classList.add("confetti");
-
-            confetti.style.left = Math.random() * 100 + "vw";
-            confetti.style.background = `hsl(${Math.random() * 360},100%,60%)`;
-
-            document.body.appendChild(confetti);
-
-            setTimeout(() => confetti.remove(), 3000);
-        }
-
-    }, 1500);
-});
 
 /* ===== CART & WISHLIST AJAX ===== */
 function toggleWishlist(e, productId, btn) {

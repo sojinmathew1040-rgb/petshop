@@ -267,19 +267,79 @@ $requested_cat = $_GET['category'] ?? 'all';
         letter-spacing: 0.05em;
     }
 
-    @media(max-width: 992px) {
+    .sidebar-header-mobile {
+        display: none !important;
+    }
+
+    .catalog-search input:focus {
+        border-color: #1d1d1f !important;
+        background: #fff !important;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+    }
+
+    @media(max-width: 768px) {
         .shop-wrapper {
             flex-direction: column;
             padding: 0 20px;
+            gap: 20px;
         }
 
-        .sidebar {
+        .sidebar-header-mobile {
+            display: flex !important;
+        }
+
+        .mobile-filter-trigger-inline {
+            display: inline-block !important;
+        }
+
+        .desktop-filter-status {
             width: 100%;
-            position: static;
+            justify-content: space-between;
+        }
+
+        /* Turn sidebar into bottom drawer on mobile */
+        .sidebar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .sidebar.active {
+            display: flex;
+        }
+
+        .sidebar-content-wrapper {
+            background: #fff;
+            width: 100%;
+            max-height: 80vh;
+            border-radius: 32px 32px 0 0;
+            padding: 30px 24px 40px 24px;
+            overflow-y: auto;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         .shop-hero h1 {
-            font-size: 40px;
+            font-size: 36px;
         }
     }
 </style>
@@ -308,36 +368,65 @@ $requested_cat = $_GET['category'] ?? 'all';
 </div>
 
 <div class="shop-wrapper">
-    <aside class="sidebar">
-        <h3>Categories</h3>
-        <div class="filter-group">
-            <label class="custom-checkbox">
-                <input type="checkbox" class="cat-filter" value="all" <?= strtolower($requested_cat) === 'all' ? 'checked' : '' ?>>
-                <span class="checkmark"></span>All Products
-            </label>
-            <?php foreach ($categories as $c): ?>
-                <label class="custom-checkbox">
-                    <input type="checkbox" class="cat-filter" value="<?= htmlspecialchars($c['name']) ?>"
-                        <?= strtolower($requested_cat) === strtolower($c['name']) ? 'checked' : '' ?>>
-                    <span class="checkmark"></span><?= htmlspecialchars($c['name']) ?>
-                </label>
-            <?php endforeach; ?>
-        </div>
+    <aside class="sidebar" id="shopSidebar">
+        <div class="sidebar-content-wrapper">
+            <div class="sidebar-header-mobile"
+                style="justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px;">
+                <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: #1d1d1f;">Filters & Sort</h3>
+                <button onclick="toggleMobileFilter(false)"
+                    style="background: rgba(0,0,0,0.05); border: none; font-size: 16px; font-weight: 600; cursor: pointer; color: #1d1d1f; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">✕</button>
+            </div>
 
-        <h3>Price Range</h3>
-        <div class="filter-group">
-            <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="under-2000"><span
-                    class="checkmark"></span>Under ₹2000</label>
-            <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="2000-5000"><span
-                    class="checkmark"></span>₹2000 - ₹5000</label>
-            <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="5000-10000"><span
-                    class="checkmark"></span>₹5000 - ₹10000</label>
-            <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="over-10000"><span
-                    class="checkmark"></span>Over ₹10000</label>
+            <h3 style="margin-top: 0;">Categories</h3>
+            <div class="filter-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" class="cat-filter" value="all" <?= strtolower($requested_cat) === 'all' ? 'checked' : '' ?>>
+                    <span class="checkmark"></span>All Products
+                </label>
+                <?php foreach ($categories as $c): ?>
+                    <label class="custom-checkbox">
+                        <input type="checkbox" class="cat-filter" value="<?= htmlspecialchars($c['name']) ?>"
+                            <?= strtolower($requested_cat) === strtolower($c['name']) ? 'checked' : '' ?>>
+                        <span class="checkmark"></span><?= htmlspecialchars($c['name']) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
+            <h3 style="margin-top: 30px;">Price Range</h3>
+            <div class="filter-group">
+                <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="under-2000"><span
+                        class="checkmark"></span>Under ₹2000</label>
+                <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="2000-5000"><span
+                        class="checkmark"></span>₹2000 - ₹5000</label>
+                <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="5000-10000"><span
+                        class="checkmark"></span>₹5000 - ₹10000</label>
+                <label class="custom-checkbox"><input type="checkbox" class="price-filter" value="over-10000"><span
+                        class="checkmark"></span>Over ₹10000</label>
+            </div>
         </div>
     </aside>
 
     <div class="shop-content">
+        <!-- Interactive Catalog Search Header -->
+        <div class="catalog-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; gap: 20px; flex-wrap: wrap;">
+            <div class="catalog-search" style="position: relative; flex: 1; max-width: 400px; min-width: 260px;">
+                <input type="text" id="catalogSearchInput" placeholder="Search within 100,000+ catalog items..."
+                    value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
+                    style="width: 100%; padding: 14px 20px 14px 48px; border: 1px solid rgba(0,0,0,0.06); border-radius: 100px; outline: none; background: #f5f5f7; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
+                <span
+                    style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #86868b; font-size: 16px;">🔍</span>
+            </div>
+
+            <div class="desktop-filter-status" style="display: flex; align-items: center; gap: 15px;">
+                <span id="product-count-badge"
+                    style="font-size: 14px; font-weight: 600; color: #86868b; font-family: -apple-system, sans-serif;">Showing
+                    all products</span>
+                <button onclick="toggleMobileFilter(true)" class="mobile-filter-trigger-inline"
+                    style="display: none; background: #1d1d1f; border: none; padding: 12px 24px; border-radius: 100px; font-weight: 600; font-size: 13px; color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: 0.2s;">Filters
+                    🔍</button>
+            </div>
+        </div>
         <div class="product-grid">
             <?php foreach ($shop_products as $p):
                 $in_wishlist = in_array($p['id'], $wishlist_items);
@@ -387,42 +476,87 @@ $requested_cat = $_GET['category'] ?? 'all';
 </div>
 
 <script>
+    function toggleMobileFilter(isOpen) {
+        const sidebar = document.getElementById("shopSidebar");
+        if (sidebar) {
+            if (isOpen) {
+                sidebar.classList.add("active");
+                document.body.style.overflow = "hidden"; // Prevent background scrolling
+            } else {
+                sidebar.classList.remove("active");
+                document.body.style.overflow = ""; // Enable scrolling
+            }
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         const catFilters = document.querySelectorAll(".cat-filter");
         const priceFilters = document.querySelectorAll(".price-filter");
         const products = document.querySelectorAll(".pro-card");
+        const searchInput = document.getElementById("catalogSearchInput");
+        const countBadge = document.getElementById("product-count-badge");
 
         function filterProducts() {
             let activeCats = Array.from(catFilters).filter(cb => cb.checked).map(cb => cb.value);
             let activePrices = Array.from(priceFilters).filter(cb => cb.checked).map(cb => cb.value);
+            const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
             const showAllCats = activeCats.includes("all") || activeCats.length === 0;
             const ignorePrice = activePrices.length === 0;
 
+            let visibleCount = 0;
             products.forEach(p => {
                 const productCat = (p.getAttribute("data-cat") || "").toLowerCase();
                 const productPrice = p.getAttribute("data-price") || "";
+                const productTitle = (p.querySelector("h4")?.innerText || "").toLowerCase();
 
                 let catMatch = showAllCats ? true : activeCats.some(cat => productCat === cat.toLowerCase());
                 let priceMatch = ignorePrice ? true : activePrices.includes(productPrice);
+                let searchMatch = searchQuery === "" ? true : productTitle.includes(searchQuery);
 
-                p.style.display = (catMatch && priceMatch) ? "flex" : "none";
+                if (catMatch && priceMatch && searchMatch) {
+                    p.style.display = "flex";
+                    visibleCount++;
+                } else {
+                    p.style.display = "none";
+                }
             });
+
+            if (countBadge) {
+                countBadge.innerText = visibleCount === products.length
+                    ? "Showing all products"
+                    : `Showing ${visibleCount} of ${products.length} products`;
+            }
         }
 
         // Initial filtering on page load to apply URL queries
         filterProducts();
 
+        if (searchInput) {
+            searchInput.addEventListener("input", filterProducts);
+        }
+
         catFilters.forEach(cb => cb.addEventListener("change", function () {
             if (this.value === "all" && this.checked) {
                 catFilters.forEach(f => { if (f.value !== "all") f.checked = false; });
             } else if (this.value !== "all" && this.checked) {
-                document.querySelector(".cat-filter[value='all']").checked = false;
+                const allFilter = document.querySelector(".cat-filter[value='all']");
+                if (allFilter) allFilter.checked = false;
             }
             filterProducts();
         }));
 
         priceFilters.forEach(cb => cb.addEventListener("change", filterProducts));
+
+        // Close sidebar if clicking outside the drawer content on mobile
+        const sidebar = document.getElementById("shopSidebar");
+        if (sidebar) {
+            sidebar.addEventListener("click", function (e) {
+                if (e.target === sidebar) {
+                    toggleMobileFilter(false);
+                }
+            });
+        }
     });
 </script>
 
